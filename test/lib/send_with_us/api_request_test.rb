@@ -318,4 +318,10 @@ class TestApiRequest < Minitest::Test
     Net::HTTP.any_instance.stubs(:request).returns(Net::HTTPSuccess.new(1.0, 200, "OK"))
     assert_instance_of( Net::HTTPSuccess, @request.get(:'logs?count=2&offset=10'))
   end
+
+  def test_class_request_path
+    build_objects
+    path = SendWithUs::ApiRequest.request_path(@config, :send)
+    assert_equal( path, '/api/v1_0/send' )
+  end
 end

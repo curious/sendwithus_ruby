@@ -86,6 +86,24 @@ module SendWithUs
       api_request.post(:send, payload.to_json)
     end
 
+    # Send a set of emails in a batch request
+    # * *Args*    :
+    #   - +email_params_sets+ -> an array where each item is an array of +email_id+, +to+, and +options+
+    # * *Notes*   :
+    #   - For more information about what should be in each item of email_params_sets, see +send_email+ documentation
+    #
+    def send_emails(email_params_sets)
+      requests = email_params_sets.map do |email_params|
+        {
+          endpoint: :send,
+          method: :post,
+          payload: prepare_email_payload(*email_params)
+        }
+      end
+
+      batch_send(requests)
+    end
+
     def drips_unsubscribe(email_address)
       if email_address.nil?
         raise SendWithUs::ApiNilEmailId, 'email_address cannot be nil'
@@ -277,6 +295,26 @@ module SendWithUs
 
     def api_request
       SendWithUs::ApiRequest.new(@configuration)
+    end
+
+    # Batch send a set of requests
+    # Each request should be a hash containing:
+    # - +endpoint+ -> The endpoint you want to go to. NOTE: this is not the full path, it will be converted to a path.
+    # - +method+ -> The http method you want to use (:get, :post, :put, etc)
+    # - +payload+ -> The payload you want sent with the request. This should NOT be to_json yet.
+    def batch_send(requests)
+      unless requests.all? { |request| ([:endpoint, :method, :payload] - request.keys).empty? }
+        raise 'Each request must be a hash containing :endpoint, :method, and :payload keys'
+      end
+
+      normalized = requests.map do |request|
+        {
+          path: ApiRequest.request_path(@configuration, request[:endpoint]),
+          method: request[:method].to_s.upcase,
+          body: request[:payload]
+        }
+      end
+      api_request.post(:batch, normalized.to_json)
     end
 
     def prepare_email_payload(email_id, to, options = {})
