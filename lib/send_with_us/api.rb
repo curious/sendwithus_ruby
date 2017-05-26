@@ -81,55 +81,7 @@ module SendWithUs
     #   - "send" is already a ruby-defined method on all classes
     #
     def send_email(email_id, to, options = {})
-      if email_id.nil?
-        raise SendWithUs::ApiNilEmailId, 'email_id cannot be nil'
-      end
-
-      payload = {
-        email_id: email_id,
-        recipient: to
-      }
-
-      if options[:data] && options[:data].any?
-        payload[:email_data] = options[:data]
-      end
-      if options[:from] && options[:from].any?
-        payload[:sender] = options[:from]
-      end
-      if options[:cc] && options[:cc].any?
-        payload[:cc] = options[:cc]
-      end
-      if options[:bcc] && options[:bcc].any?
-        payload[:bcc] = options[:bcc]
-      end
-      if options[:esp_account]
-        payload[:esp_account] = options[:esp_account]
-      end
-      if options[:version_name]
-        payload[:version_name] = options[:version_name]
-      end
-      if options[:headers] && options[:headers].any?
-        payload[:headers] = options[:headers]
-      end
-      if options[:tags] && options[:tags].any?
-        payload[:tags] = options[:tags]
-      end
-      if options[:locale]
-        payload[:locale] = options[:locale]
-      end
-
-      if options[:files] && options[:files].any?
-        payload[:files] = []
-
-        options[:files].each do |file_data|
-          if file_data.is_a?(String)
-            attachment = SendWithUs::Attachment.new(file_data)
-          else
-            attachment = SendWithUs::Attachment.new(file_data[:attachment], file_data[:filename])
-          end
-          payload[:files] << { id: attachment.filename, data: attachment.encoded_data }
-        end
-      end
+      payload = prepare_email_payload(email_id, to, options)
 
       api_request.post(:send, payload.to_json)
     end
@@ -320,11 +272,65 @@ module SendWithUs
       endpoint = "templates/#{template_id}/versions"
       api_request.post(endpoint, payload.to_json)
     end
-    
+
     private
-    
+
     def api_request
       SendWithUs::ApiRequest.new(@configuration)
+    end
+
+    def prepare_email_payload(email_id, to, options = {})
+      if email_id.nil?
+        raise SendWithUs::ApiNilEmailId, 'email_id cannot be nil'
+      end
+
+      payload = {
+        email_id: email_id,
+        recipient: to
+      }
+
+      if options[:data] && options[:data].any?
+        payload[:email_data] = options[:data]
+      end
+      if options[:from] && options[:from].any?
+        payload[:sender] = options[:from]
+      end
+      if options[:cc] && options[:cc].any?
+        payload[:cc] = options[:cc]
+      end
+      if options[:bcc] && options[:bcc].any?
+        payload[:bcc] = options[:bcc]
+      end
+      if options[:esp_account]
+        payload[:esp_account] = options[:esp_account]
+      end
+      if options[:version_name]
+        payload[:version_name] = options[:version_name]
+      end
+      if options[:headers] && options[:headers].any?
+        payload[:headers] = options[:headers]
+      end
+      if options[:tags] && options[:tags].any?
+        payload[:tags] = options[:tags]
+      end
+      if options[:locale]
+        payload[:locale] = options[:locale]
+      end
+
+      if options[:files] && options[:files].any?
+        payload[:files] = []
+
+        options[:files].each do |file_data|
+          if file_data.is_a?(String)
+            attachment = SendWithUs::Attachment.new(file_data)
+          else
+            attachment = SendWithUs::Attachment.new(file_data[:attachment], file_data[:filename])
+          end
+          payload[:files] << { id: attachment.filename, data: attachment.encoded_data }
+        end
+      end
+
+      payload
     end
   end
 end
