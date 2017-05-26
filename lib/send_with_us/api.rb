@@ -131,7 +131,7 @@ module SendWithUs
         end
       end
 
-      SendWithUs::ApiRequest.new(@configuration).post(:send, payload.to_json)
+      api_request.post(:send, payload.to_json)
     end
 
     def drips_unsubscribe(email_address)
@@ -142,11 +142,11 @@ module SendWithUs
       payload = {email_address: email_address}
 
       payload = payload.to_json
-      SendWithUs::ApiRequest.new(@configuration).post(:'drips/unsubscribe', payload)
+      api_request.post(:'drips/unsubscribe', payload)
     end
 
     def emails()
-      SendWithUs::ApiRequest.new(@configuration).get(:emails)
+      api_request.get(:emails)
     end
 
     alias list_templates emails
@@ -163,7 +163,7 @@ module SendWithUs
       payload[:locale] = locale if locale
 
       payload = payload.to_json
-      SendWithUs::ApiRequest.new(@configuration).post(:'render', payload)
+      api_request.post(:'render', payload)
     end
 
     def create_template(name, subject, html, text)
@@ -175,11 +175,11 @@ module SendWithUs
       }
 
       payload = payload.to_json
-      SendWithUs::ApiRequest.new(@configuration).post(:emails, payload)
+      api_request.post(:emails, payload)
     end
 
     def list_drip_campaigns()
-      SendWithUs::ApiRequest.new(@configuration).get(:drip_campaigns)
+      api_request.get(:drip_campaigns)
     end
 
     def start_on_drip_campaign(recipient_address, drip_campaign_id, email_data={}, locale=nil, tags=[])
@@ -197,7 +197,7 @@ module SendWithUs
 
       payload = payload.to_json
       endpoint = "drip_campaigns/#{drip_campaign_id}/activate"
-      SendWithUs::ApiRequest.new(@configuration).post(endpoint, payload)
+      api_request.post(endpoint, payload)
     end
 
     def remove_from_drip_campaign(recipient_address, drip_campaign_id)
@@ -206,23 +206,23 @@ module SendWithUs
       }
 
       payload = payload.to_json
-      SendWithUs::ApiRequest.new(@configuration).post("drip_campaigns/#{drip_campaign_id}/deactivate", payload)
+      api_request.post("drip_campaigns/#{drip_campaign_id}/deactivate", payload)
     end
 
     def drip_campaign_details(drip_campaign_id)
-      SendWithUs::ApiRequest.new(@configuration).get("drip_campaigns/#{drip_campaign_id}")
+      api_request.get("drip_campaigns/#{drip_campaign_id}")
     end
 
     def list_customers_on_campaign(drip_campaign_id)
-      SendWithUs::ApiRequest.new(@configuration).get("drip_campaigns/#{drip_campaign_id}/customers")
+      api_request.get("drip_campaigns/#{drip_campaign_id}/customers")
     end
 
     def list_customers_on_campaign_step(drip_campaign_id, drip_campaign_step_id)
-      SendWithUs::ApiRequest.new(@configuration).get("drip_campaigns/#{drip_campaign_id}/step/#{drip_campaign_step_id}/customers")
+      api_request.get("drip_campaigns/#{drip_campaign_id}/step/#{drip_campaign_step_id}/customers")
     end
 
     def customer_get(email)
-      SendWithUs::ApiRequest.new(@configuration).get("customers/#{email}")
+      api_request.get("customers/#{email}")
     end
 
     def customer_create(email, data = {}, locale = nil)
@@ -233,12 +233,12 @@ module SendWithUs
 
       payload = payload.to_json
       endpoint = "customers"
-      SendWithUs::ApiRequest.new(@configuration).post(endpoint, payload)
+      api_request.post(endpoint, payload)
     end
 
     def customer_delete(email_address)
       endpoint = "customers/#{email_address}"
-      SendWithUs::ApiRequest.new(@configuration).delete(endpoint)
+      api_request.delete(endpoint)
     end
 
     def customer_email_log(email_address, options = {})
@@ -254,7 +254,7 @@ module SendWithUs
         endpoint = endpoint + '?' + params
       end
 
-      SendWithUs::ApiRequest.new(@configuration).get(endpoint)
+      api_request.get(endpoint)
     end
 
     def logs(options = {})
@@ -273,28 +273,28 @@ module SendWithUs
         endpoint = endpoint + '?' + params
       end
 
-      SendWithUs::ApiRequest.new(@configuration).get(endpoint)
+      api_request.get(endpoint)
     end
 
     def log(log_id)
       endpoint = "logs/#{log_id}"
 
-      SendWithUs::ApiRequest.new(@configuration).get(endpoint)
+      api_request.get(endpoint)
     end
 
     def delete_template(template_id)
       endpoint = "templates/#{template_id}"
-      SendWithUs::ApiRequest.new(@configuration).delete(endpoint)
+      api_request.delete(endpoint)
     end
 
     def list_template_versions(template_id)
       endpoint = "templates/#{template_id}/versions"
-      SendWithUs::ApiRequest.new(@configuration).get(endpoint)
+      api_request.get(endpoint)
     end
 
     def get_template_version(template_id, version_id)
       endpoint = "templates/#{template_id}/versions/#{version_id}"
-      SendWithUs::ApiRequest.new(@configuration).get(endpoint)
+      api_request.get(endpoint)
     end
 
     def update_template_version(template_id, version_id, name, subject, html, text)
@@ -306,7 +306,7 @@ module SendWithUs
       }
 
       endpoint = "templates/#{template_id}/versions/#{version_id}"
-      SendWithUs::ApiRequest.new(@configuration).put(endpoint, payload.to_json)
+      api_request.put(endpoint, payload.to_json)
     end
 
     def create_template_version(template_id, name, subject, html, text)
@@ -318,7 +318,13 @@ module SendWithUs
       }
 
       endpoint = "templates/#{template_id}/versions"
-      SendWithUs::ApiRequest.new(@configuration).post(endpoint, payload.to_json)
+      api_request.post(endpoint, payload.to_json)
+    end
+    
+    private
+    
+    def api_request
+      SendWithUs::ApiRequest.new(@configuration)
     end
   end
 end
